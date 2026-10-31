@@ -1,4 +1,4 @@
-// Enterprise Real Estate Seed Data (Master Prompt V2)
+// Savills Enterprise Real Estate Seed Data (Master Prompt V2)
 const { getDatabase, initSchema } = require('./database');
 const crypto = require('node:crypto');
 const MasterDataService = require('../services/masterDataService');
@@ -6,34 +6,49 @@ const ContractService = require('../services/contractService');
 const CommissionEngine = require('../services/commissionEngine');
 const ScheduleEngine = require('../services/scheduleEngine');
 
-function runSeed() {
-    console.log('--- Initializing Enterprise Leasing Schema ---');
+function runSeed(force = false) {
+    console.log('--- Initializing Savills Commercial Leasing Schema ---');
     initSchema();
     const db = getDatabase();
 
-    // Check if already seeded
-    const companyCount = db.prepare(`SELECT COUNT(*) as count FROM companies`).get();
-    if (companyCount.count > 0) {
-        console.log('Database already seeded. Skipping initial seeding.');
-        return;
+    if (force) {
+        db.exec('PRAGMA foreign_keys = OFF;');
+        const tables = [
+            'companies', 'projects', 'buildings', 'zones', 'area_types', 'unit_types',
+            'units', 'unit_areas', 'tenants', 'brands', 'pipelines', 'pipeline_stages',
+            'deals', 'deal_area_allocations', 'deal_area_rates', 'deal_deposits',
+            'tax_configurations', 'deal_financial_snapshots', 'contracts', 'contract_signatures',
+            'contract_amendments', 'commission_agreements', 'commission_calculations',
+            'commission_invoices', 'commission_payments', 'financial_schedules', 'schedule_lines'
+        ];
+        for (const t of tables) {
+            db.exec(`DELETE FROM ${t};`);
+        }
+        db.exec('PRAGMA foreign_keys = ON;');
+    } else {
+        const companyCount = db.prepare(`SELECT COUNT(*) as count FROM companies`).get();
+        if (companyCount.count > 0) {
+            console.log('Database already seeded. Skipping initial seeding.');
+            return;
+        }
     }
 
-    console.log('--- Seeding Companies & Master Hierarchy ---');
+    console.log('--- Seeding Savills Corporate Entity ---');
     const companyId = crypto.randomUUID();
     db.prepare(`
         INSERT INTO companies (id, name, tax_number, currency, country)
-        VALUES (?, 'Al-Futtaim & Horizon Real Estate Management Ltd.', 'EG-8849-204', 'EGP', 'Egypt')
+        VALUES (?, 'Savills Commercial Egypt Ltd. (Savills Middle East)', 'EG-SAVILLS-001', 'EGP', 'Egypt')
     `).run(companyId);
 
-    // 1. DYNAMIC AREA TYPES (NEVER HARDCODED COLUMNS)
+    // 1. DYNAMIC AREA TYPES
     console.log('--- Seeding Dynamic Area Types ---');
     const areaTypes = [
-        { id: crypto.randomUUID(), code: 'INDOOR', en: 'Indoor', ar: 'مساحة داخلية', rentable: 1, order: 1 },
-        { id: crypto.randomUUID(), code: 'OUTDOOR', en: 'Outdoor', ar: 'مساحة خارجية', rentable: 1, order: 2 },
-        { id: crypto.randomUUID(), code: 'TERRACE', en: 'Terrace', ar: 'تراس', rentable: 1, order: 3 },
-        { id: crypto.randomUUID(), code: 'STORAGE', en: 'Storage', ar: 'مخزن ملحق', rentable: 1, order: 4 },
-        { id: crypto.randomUUID(), code: 'GARDEN', en: 'Garden', ar: 'حديقة خاصة', rentable: 1, order: 5 },
-        { id: crypto.randomUUID(), code: 'BASEMENT', en: 'Basement', ar: 'بدروم', rentable: 0, order: 6 }
+        { id: crypto.randomUUID(), code: 'INDOOR', en: 'Indoor Area', ar: 'Indoor Area', rentable: 1, order: 1 },
+        { id: crypto.randomUUID(), code: 'OUTDOOR', en: 'Outdoor Promenade', ar: 'Outdoor Promenade', rentable: 1, order: 2 },
+        { id: crypto.randomUUID(), code: 'TERRACE', en: 'Terrace', ar: 'Terrace', rentable: 1, order: 3 },
+        { id: crypto.randomUUID(), code: 'STORAGE', en: 'Dedicated Storage', ar: 'Dedicated Storage', rentable: 1, order: 4 },
+        { id: crypto.randomUUID(), code: 'GARDEN', en: 'Private Garden', ar: 'Private Garden', rentable: 1, order: 5 },
+        { id: crypto.randomUUID(), code: 'BASEMENT', en: 'Basement Facility', ar: 'Basement Facility', rentable: 0, order: 6 }
     ];
 
     const areaTypeMap = {};
@@ -48,11 +63,11 @@ function runSeed() {
     // 2. UNIT TYPES
     console.log('--- Seeding Unit Types ---');
     const unitTypes = [
-        { id: crypto.randomUUID(), code: 'RETAIL', en: 'Retail Store', ar: 'محل تجاري', category: 'Retail' },
-        { id: crypto.randomUUID(), code: 'RESTAURANT', en: 'Restaurant & Cafe', ar: 'مطعم ومقهى', category: 'F&B' },
-        { id: crypto.randomUUID(), code: 'OFFICE', en: 'Corporate Office', ar: 'مكتب إداري', category: 'Office' },
-        { id: crypto.randomUUID(), code: 'KIOSK', en: 'Island Kiosk', ar: 'كشك جزيرة', category: 'Kiosk' },
-        { id: crypto.randomUUID(), code: 'STORAGE', en: 'Dedicated Storage', ar: 'مستودع تجاري', category: 'Storage' }
+        { id: crypto.randomUUID(), code: 'RETAIL', en: 'Prime Retail Store', ar: 'Prime Retail Store', category: 'Retail' },
+        { id: crypto.randomUUID(), code: 'RESTAURANT', en: 'Restaurant & Dining', ar: 'Restaurant & Dining', category: 'F&B' },
+        { id: crypto.randomUUID(), code: 'OFFICE', en: 'Grade-A Corporate Office', ar: 'Grade-A Corporate Office', category: 'Office' },
+        { id: crypto.randomUUID(), code: 'KIOSK', en: 'Promenade Island Kiosk', ar: 'Promenade Island Kiosk', category: 'Kiosk' },
+        { id: crypto.randomUUID(), code: 'STORAGE', en: 'Commercial Storage', ar: 'Commercial Storage', category: 'Storage' }
     ];
     const unitTypeMap = {};
     for (const ut of unitTypes) {
@@ -63,69 +78,69 @@ function runSeed() {
         unitTypeMap[ut.code] = ut.id;
     }
 
-    // 3. PROJECTS & BUILDINGS
-    console.log('--- Seeding Projects & Buildings ---');
+    // 3. SAVILLS PRIME MANAGED ASSETS
+    console.log('--- Seeding Savills Managed Commercial Assets ---');
     const projectCFC = MasterDataService.createProject({
         company_id: companyId,
-        code: 'CFC-MALL',
-        name: 'Cairo Festival City Mall',
-        project_type: 'Retail Mall',
+        code: 'SAV-CFC',
+        name: 'Savills Commercial Plaza (CFC)',
+        project_type: 'Retail & Lifestyle Mall',
         location: 'New Cairo, 5th Settlement, Cairo',
         currency: 'EGP',
-        project_manager: 'Eng. Karim El-Sayed',
-        description: 'Premier regional shopping mall featuring luxury retail, F&B promenades and entertainment zones.'
+        project_manager: 'Mahmoud Naeem (Head of Commercial Leasing)',
+        description: 'Flagship Savills managed regional retail and lifestyle destination featuring high-street fashion and luxury F&B promenades.'
     });
 
     const projectNile = MasterDataService.createProject({
         company_id: companyId,
-        code: 'NCT-OFFICE',
-        name: 'Nile City Towers',
-        project_type: 'Commercial & Mixed-Use',
+        code: 'SAV-NCT',
+        name: 'Nile City Corporate Towers',
+        project_type: 'Grade-A Corporate Towers',
         location: 'Corniche El Nil, Ramlet Beaulac, Cairo',
         currency: 'EGP',
-        project_manager: 'Nouran Mostafa',
-        description: 'Grade-A corporate office towers with panoramic Nile views and premium retail frontage.'
+        project_manager: 'Nouran Mostafa (Senior Director)',
+        description: 'Savills asset advisory corporate office headquarters offering panoramic Nile river views.'
     });
 
     const projectArkan = MasterDataService.createProject({
         company_id: companyId,
-        code: 'ARK-PLAZA',
-        name: 'Arkan Plaza Expansion',
-        project_type: 'Commercial & Dining',
+        code: 'SAV-ARK',
+        name: 'Arkan Plaza Commercial Wing',
+        project_type: 'Commercial & Open-Air Dining',
         location: 'El Sheikh Zayed City, Giza',
         currency: 'EGP',
-        project_manager: 'Ahmed Mansour',
-        description: 'Upscale open-air lifestyle commercial center in Sheikh Zayed.'
+        project_manager: 'Karim Mansour (Asset Manager)',
+        description: 'Premier upscale open-air lifestyle commercial center in Sheikh Zayed.'
     });
 
-    // Buildings & Zones for CFC
+    // Buildings
     const bldRetailA = crypto.randomUUID();
     db.prepare(`
         INSERT INTO buildings (id, project_id, code, name, total_floors, description)
-        VALUES (?, ?, 'BLD-A', 'Fashion Avenue Building A', 3, 'Prime retail arcade adjacent to Fountain Promenade')
+        VALUES (?, ?, 'BLD-A', 'Savills Promenade Building A', 3, 'Prime retail arcade adjacent to Fountain Square')
     `).run(bldRetailA, projectCFC.id);
 
     const bldTowerNile = crypto.randomUUID();
     db.prepare(`
         INSERT INTO buildings (id, project_id, code, name, total_floors, description)
-        VALUES (?, ?, 'TWR-NORTH', 'North Executive Office Tower', 32, 'Grade-A headquarters tower')
+        VALUES (?, ?, 'TWR-NORTH', 'North Executive Office Tower', 32, 'Grade-A multinational corporate headquarters')
     `).run(bldTowerNile, projectNile.id);
 
     // 4. PIPELINES & STAGES
-    console.log('--- Seeding Pipelines & Stages ---');
+    console.log('--- Seeding Leasing Pipelines ---');
     const pipelineRetail = crypto.randomUUID();
     db.prepare(`
         INSERT INTO pipelines (id, company_id, project_id, name, code, is_active)
-        VALUES (?, ?, ?, 'Retail & Commercial Leasing Pipeline', 'PL-RETAIL', 1)
+        VALUES (?, ?, ?, 'Savills Commercial Leasing Pipeline', 'PL-SAVILLS-COMM', 1)
     `).run(pipelineRetail, companyId, projectCFC.id);
 
     const stagesRetail = [
-        { id: crypto.randomUUID(), en: 'Initial Prospecting', ar: 'التواصل المبدئي', order: 1, prob: 10, color: '#94a3b8' },
-        { id: crypto.randomUUID(), en: 'Brand Concept & Tour', ar: 'معاينة الموقع ومراجعة العلامة', order: 2, prob: 30, color: '#38bdf8' },
-        { id: crypto.randomUUID(), en: 'Commercial Proposal', ar: 'العرض التجاري والمالي', order: 3, prob: 60, color: '#f59e0b' },
-        { id: crypto.randomUUID(), en: 'Dual Signature & Legal Verification', ar: 'التوقيع والتحقق القانوني', order: 4, prob: 85, color: '#8b5cf6' },
-        { id: crypto.randomUUID(), en: 'Closed Won (Executed)', ar: 'تم التعاقد بنجاح', order: 5, prob: 100, color: '#10b981', won: 1 },
-        { id: crypto.randomUUID(), en: 'Closed Lost', ar: 'صفقة ملغاة', order: 6, prob: 0, color: '#ef4444', lost: 1 }
+        { id: crypto.randomUUID(), en: 'Initial Prospecting', ar: 'Initial Prospecting', order: 1, prob: 10, color: '#94a3b8' },
+        { id: crypto.randomUUID(), en: 'Concept Review & Tour', ar: 'Concept Review & Tour', order: 2, prob: 30, color: '#38bdf8' },
+        { id: crypto.randomUUID(), en: 'Commercial Proposal', ar: 'Commercial Proposal', order: 3, prob: 60, color: '#f59e0b' },
+        { id: crypto.randomUUID(), en: 'Dual Signature & Legal Verification', ar: 'Dual Signature & Legal Verification', order: 4, prob: 85, color: '#8b5cf6' },
+        { id: crypto.randomUUID(), en: 'Executed & Closed Won', ar: 'Executed & Closed Won', order: 5, prob: 100, color: '#10b981', won: 1 },
+        { id: crypto.randomUUID(), en: 'Closed Lost', ar: 'Closed Lost', order: 6, prob: 0, color: '#ef4444', lost: 1 }
     ];
 
     const stageMap = {};
@@ -138,42 +153,38 @@ function runSeed() {
     }
 
     // 5. TENANTS & BRANDS
-    console.log('--- Seeding Tenants & Brands ---');
+    console.log('--- Seeding Tenants & Global Brands ---');
     const tenantAlshayaId = crypto.randomUUID();
     db.prepare(`
         INSERT INTO tenants (id, company_id, legal_name, commercial_name, tax_registration_number, contact_person, phone, email, address)
-        VALUES (?, ?, 'M.H. Alshaya Egypt LLC', 'Alshaya Group Egypt', 'EG-493-291-01', 'Tarek El-Kady', '+20 100 123 4567', 'leasing.egypt@alshaya.com', 'Plot 43, 90th North St, New Cairo')
+        VALUES (?, ?, 'M.H. Alshaya Egypt LLC', 'Alshaya International Group', 'EG-493-291-01', 'Tarek El-Kady', '+20 100 123 4567', 'leasing.egypt@alshaya.com', 'Plot 43, 90th North St, New Cairo')
     `).run(tenantAlshayaId, companyId);
 
     const brandStarbucks = crypto.randomUUID();
-    db.prepare(`INSERT INTO brands (id, tenant_id, name, industry) VALUES (?, ?, 'Starbucks Coffee', 'Dining & Cafes')`).run(brandStarbucks, tenantAlshayaId);
-    const brandHM = crypto.randomUUID();
-    db.prepare(`INSERT INTO brands (id, tenant_id, name, industry) VALUES (?, ?, 'H&M Hennes & Mauritz', 'Fashion Apparel')`).run(brandHM, tenantAlshayaId);
+    db.prepare(`INSERT INTO brands (id, tenant_id, name, industry) VALUES (?, ?, 'Starbucks Reserve', 'F&B Specialty Dining')`).run(brandStarbucks, tenantAlshayaId);
 
     const tenantAzadeaId = crypto.randomUUID();
     db.prepare(`
         INSERT INTO tenants (id, company_id, legal_name, commercial_name, tax_registration_number, contact_person, phone, email, address)
-        VALUES (?, ?, 'Azadea Egypt for Retail S.A.E.', 'Azadea Group', 'EG-782-119-45', 'Mona Zaki', '+20 102 987 6543', 'realestate@azadea.com', 'Dandy Mall Complex, Cairo-Alexandria Rd')
+        VALUES (?, ?, 'Azadea Egypt for Retail S.A.E.', 'Azadea Group Holding', 'EG-782-119-45', 'Mona Zaki', '+20 102 987 6543', 'realestate@azadea.com', 'Dandy Mall Complex, Cairo-Alexandria Rd')
     `).run(tenantAzadeaId, companyId);
 
-    const brandZara = crypto.randomUUID();
-    db.prepare(`INSERT INTO brands (id, tenant_id, name, industry) VALUES (?, ?, 'Zara & Zara Home', 'Fast Fashion')`).run(brandZara, tenantAzadeaId);
     const brandPaul = crypto.randomUUID();
-    db.prepare(`INSERT INTO brands (id, tenant_id, name, industry) VALUES (?, ?, 'Paul Bakery & Restaurant', 'French Bakery & Cafe')`).run(brandPaul, tenantAzadeaId);
+    db.prepare(`INSERT INTO brands (id, tenant_id, name, industry) VALUES (?, ?, 'Paul Bakery & Restaurant', 'French Bistro & Cafe')`).run(brandPaul, tenantAzadeaId);
 
-    // 6. UNITS WITH DYNAMIC AREA SIZING
-    console.log('--- Seeding Units with Dynamic Multi-Component Sizing ---');
-    // Unit A-101: Indoor 100 SQM, Outdoor 20 SQM, Terrace 15 SQM (Total 135 SQM) - Exactly as in Prompt Example!
+    // 6. UNITS WITH DYNAMIC MULTI-COMPONENT SIZING
+    console.log('--- Seeding Dynamic Commercial Units ---');
+    // Unit A-101: Indoor 100 SQM, Outdoor 20 SQM, Terrace 15 SQM (Total 135 SQM)
     const unitA101 = MasterDataService.createUnitWithAreas({
         project_id: projectCFC.id,
         building_id: bldRetailA,
         unit_number: 'A-101',
         floor_number: 'Ground Floor',
         unit_type_id: unitTypeMap['RESTAURANT'],
-        ownership_info: 'Developer Owned',
+        ownership_info: 'Savills Managed Portfolio',
         description: 'Prime corner restaurant unit with outdoor promenade frontage and private terrace.',
         areas: [
-            { area_type_id: areaTypeMap['INDOOR'], size_sqm: 100, description: 'Main indoor seating & kitchen area' },
+            { area_type_id: areaTypeMap['INDOOR'], size_sqm: 100, description: 'Main indoor seating & dining hall' },
             { area_type_id: areaTypeMap['OUTDOOR'], size_sqm: 20, description: 'Promenade outdoor customer seating' },
             { area_type_id: areaTypeMap['TERRACE'], size_sqm: 15, description: 'Elevated side terrace' }
         ]
@@ -186,37 +197,37 @@ function runSeed() {
         unit_number: 'A-102',
         floor_number: 'Ground Floor',
         unit_type_id: unitTypeMap['RETAIL'],
-        ownership_info: 'Developer Owned',
+        ownership_info: 'Savills Managed Portfolio',
         description: 'Anchor retail showroom with dedicated rear loading storage.',
         areas: [
-            { area_type_id: areaTypeMap['INDOOR'], size_sqm: 250, description: 'Retail display area' },
-            { area_type_id: areaTypeMap['STORAGE'], size_sqm: 40, description: 'Back-of-house storage facility' }
+            { area_type_id: areaTypeMap['INDOOR'], size_sqm: 250, description: 'Flagship retail showroom' },
+            { area_type_id: areaTypeMap['STORAGE'], size_sqm: 40, description: 'Dedicated logistics storage' }
         ]
     });
 
-    // Unit T-1401 (Office in Nile City): Indoor 320 SQM, Terrace 30 SQM, Storage 25 SQM
+    // Unit T-1401: Office in Nile City: Indoor 320 SQM, Terrace 30 SQM, Storage 25 SQM
     const unitT1401 = MasterDataService.createUnitWithAreas({
         project_id: projectNile.id,
         building_id: bldTowerNile,
         unit_number: 'T-1401',
         floor_number: '14th Floor',
         unit_type_id: unitTypeMap['OFFICE'],
-        ownership_info: 'Nile City Holdings',
+        ownership_info: 'Nile City Holdings (Savills Exclusive Advisory)',
         description: 'Full-floor panoramic Nile view corporate office suite.',
         areas: [
-            { area_type_id: areaTypeMap['INDOOR'], size_sqm: 320, description: 'Executive workspace & meeting rooms' },
+            { area_type_id: areaTypeMap['INDOOR'], size_sqm: 320, description: 'Executive workspace & boardrooms' },
             { area_type_id: areaTypeMap['TERRACE'], size_sqm: 30, description: 'Nile-facing open terrace' },
-            { area_type_id: areaTypeMap['STORAGE'], size_sqm: 25, description: 'Secure IT and archive room' }
+            { area_type_id: areaTypeMap['STORAGE'], size_sqm: 25, description: 'Secure IT and server room' }
         ]
     });
 
-    // 7. MULTI-DEAL ALLOCATION MANAGEMENT ON UNIT A-101 (PARTIAL UNIT LEASING)
-    console.log('--- Creating Simultaneous Partial Leasing Deals on Unit A-101 ---');
-    // Deal 1: Paul Bakery taking Indoor 70 SQM + Outdoor 10 SQM
+    // 7. SIMULTANEOUS PARTIAL LEASING ON UNIT A-101
+    console.log('--- Seeding Simultaneous Partial Leasing Deals on Unit A-101 ---');
     const unitA101Indoor = unitA101.areas.find(a => a.area_type_code === 'INDOOR');
     const unitA101Outdoor = unitA101.areas.find(a => a.area_type_code === 'OUTDOOR');
     const unitA101Terrace = unitA101.areas.find(a => a.area_type_code === 'TERRACE');
 
+    // Deal 1: Paul Bakery taking Indoor 70 SQM + Outdoor 10 SQM
     const dealPaul = MasterDataService.createDealWithAllocations({
         project_id: projectCFC.id,
         unit_id: unitA101.id,
@@ -225,7 +236,7 @@ function runSeed() {
         deal_type: 'Partial Unit Leasing',
         pipeline_id: pipelineRetail,
         current_stage_id: stageMap['Dual Signature & Legal Verification'],
-        deal_owner: 'Mostafa Kamel (Senior Leasing Specialist)',
+        deal_owner: 'Mahmoud Naeem (Head of Commercial)',
         contract_start_date: '2026-01-01',
         contract_end_date: '2028-12-31',
         fit_out_days: 60,
@@ -253,7 +264,7 @@ function runSeed() {
         }
     });
 
-    // Deal 2: Starbucks taking the remaining portion: Indoor 30 SQM + Terrace 15 SQM!
+    // Deal 2: Starbucks Reserve taking remaining portion: Indoor 30 SQM + Terrace 15 SQM!
     const dealStarbucks = MasterDataService.createDealWithAllocations({
         project_id: projectCFC.id,
         unit_id: unitA101.id,
@@ -262,12 +273,12 @@ function runSeed() {
         deal_type: 'Partial Unit Leasing',
         pipeline_id: pipelineRetail,
         current_stage_id: stageMap['Commercial Proposal'],
-        deal_owner: 'Noha Sherif (Commercial Leasing Manager)',
+        deal_owner: 'Sara Ibrahim (Commercial Associate)',
         contract_start_date: '2026-02-01',
         contract_end_date: '2029-01-31',
         fit_out_days: 45,
         rent_free_days: 15,
-        commercial_terms: 'Express coffee bar with exclusive outdoor terrace seating.',
+        commercial_terms: 'Express reserve coffee bar with exclusive outdoor terrace seating.',
         allocations: [
             { unit_area_id: unitA101Indoor.unit_area_id, allocated_sqm: 30 },
             { unit_area_id: unitA101Terrace.unit_area_id, allocated_sqm: 15 }
@@ -290,55 +301,45 @@ function runSeed() {
         }
     });
 
-    // 8. DUAL-SIGNATURE VERIFICATION WORKFLOW & COMMISSION DUE TRIGGER ON DEAL PAUL
-    console.log('--- Executing Dual-Signature Workflow on Deal Paul ---');
+    // 8. DUAL-SIGNATURE WORKFLOW & COMMISSION DUE TRIGGER
+    console.log('--- Executing Savills Dual-Signature Legal Verification on Deal Paul ---');
     const contractPaul = db.prepare(`SELECT * FROM contracts WHERE deal_id = ?`).get(dealPaul.id);
 
-    // Step A: Landlord signs
-    ContractService.recordSignature(contractPaul.id, 'LANDLORD', 'Ahmed El-Gohary', 'VP Commercial Operations');
-    // Step B: Landlord signature is verified
-    ContractService.verifySignature(contractPaul.id, 'LANDLORD', 'Legal Counsel - Compliance Dept', 'Verified corporate authorization power of attorney');
+    // Step A: Landlord signs & verifies
+    ContractService.recordSignature(contractPaul.id, 'LANDLORD', 'Mahmoud Naeem', 'Savills Head of Commercial Advisory');
+    ContractService.verifySignature(contractPaul.id, 'LANDLORD', 'Savills Legal & Governance Council', 'Power of Attorney verified');
 
-    // Commission should NOT be due yet because Tenant has not signed/verified!
-    let commCalc = db.prepare(`SELECT * FROM commission_calculations WHERE contract_id = ?`).get(contractPaul.id);
-    console.log(`Single signature verified - Commission status: ${commCalc ? commCalc.commission_status : 'Not Triggered Yet (Correct)'}`);
-
-    // Step C: Tenant signs
+    // Step B: Tenant signs & verifies
     ContractService.recordSignature(contractPaul.id, 'TENANT', 'Mona Zaki', 'Country Real Estate Director');
-    // Step D: Tenant signature is verified
-    ContractService.verifySignature(contractPaul.id, 'TENANT', 'Head of Legal & Governance', 'Commercial register and board resolution verified');
+    ContractService.verifySignature(contractPaul.id, 'TENANT', 'Azadea Legal Counsel', 'Commercial register verified');
 
-    // Now BOTH are verified! Commission Due is automatically triggered!
-    commCalc = db.prepare(`SELECT * FROM commission_calculations WHERE contract_id = ?`).get(contractPaul.id);
-    console.log(`Both signatures verified! Commission status triggered: ${commCalc ? commCalc.commission_status : 'Error'}`);
+    // Automatic trigger: Both verified -> Commission Due!
+    const commCalc = db.prepare(`SELECT * FROM commission_calculations WHERE contract_id = ?`).get(contractPaul.id);
 
     // Issue Commission Invoice
     const invoice = CommissionEngine.issueCommissionInvoice(commCalc.id);
-    console.log(`Commission Invoice issued: ${invoice.invoice_number} for amount EGP ${invoice.total_amount}`);
 
     // Record Partial Payment
-    const payment = CommissionEngine.recordCommissionPayment(invoice.id, {
+    CommissionEngine.recordCommissionPayment(invoice.id, {
         amount: Math.round(invoice.total_amount / 2),
-        payment_reference: 'CIB-TRANSFER-992014',
+        payment_reference: 'SAVILLS-CIB-TRANSFER-992014',
         payment_method: 'Bank Transfer',
-        notes: 'First 50% instalment received per commercial agreement'
+        notes: 'First 50% instalment received per Savills commercial mandate'
     });
-    console.log(`Commission payment recorded: EGP ${payment.paid_amount} / Remaining Balance: EGP ${payment.remaining_balance}`);
 
-    // Generate Financial Schedule with 10% annual escalation
-    const schedule = ScheduleEngine.generateSchedule(contractPaul.id, {
+    // Generate Financial Schedule
+    ScheduleEngine.generateSchedule(contractPaul.id, {
         billing_frequency: 'QUARTERLY',
         annual_escalation_rate: 0.10,
         rent_free_months: 1,
         fit_out_months: 2
     });
-    console.log(`Financial Billing Schedule generated with ${schedule.lines.length} quarterly billing periods.`);
 
-    console.log('=== Database Seeding Completed Successfully! ===');
+    console.log('=== Savills Seed Data Initialized Successfully! ===');
 }
 
 if (require.main === module) {
-    runSeed();
+    runSeed(true);
 }
 
 module.exports = { runSeed };
