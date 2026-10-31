@@ -1,0 +1,27 @@
+{
+  "name": "enterprise-property-leasing-system",
+  "version": "2.0.0",
+  "description": "Enterprise Property & Commercial Leasing Management System with Dynamic Area Management, Dual-Signature Verification Gating, and Segregated Commission Accounting",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node tests/verify_all.js",
+    "seed": "node src/db/seed.js"
+  },
+  "keywords": [
+    "commercial-real-estate",
+    "property-management",
+    "leasing-management",
+    "financial-accounting",
+    "yardi",
+    "mri-software",
+    "sqlite",
+    "dual-signature",
+    "leasing-commission"
+  ],
+  "author": "Mahmoud Naeem",
+  "license": "Proprietary",
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}
