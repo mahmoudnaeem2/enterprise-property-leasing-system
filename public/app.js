@@ -1,60 +1,4 @@
-// Enterprise Property & Leasing Client Controller
-const I18N = {
-    en: {
-        app_sub: 'Enterprise Property & Leasing',
-        nav_portfolio: 'Portfolio & Projects',
-        nav_units: 'Units & Dynamic Areas',
-        nav_pipeline: 'Leasing Pipeline (Kanban)',
-        nav_contracts: 'Contracts & Dual Signatures',
-        nav_commissions: 'Commission Ledger',
-        nav_admin: 'Dynamic Admin Settings',
-        btn_new_deal: 'New Leasing Deal',
-        kpi_occupancy: 'Portfolio Occupancy',
-        kpi_active_deals: 'Active Deals in Pipeline',
-        kpi_comm_due: 'Leasing Commission Due',
-        kpi_comm_collected: 'Commission Collected',
-        kpi_dual_sig_note: 'Triggered upon dual signature',
-        projects_title: 'Commercial Projects',
-        units_title: 'Unit Register & Dynamic Multi-Component Areas',
-        units_desc: 'Units support multiple independent area types (Indoor, Outdoor, Terrace, Storage) and simultaneous partial leasing.',
-        pipeline_title: 'Leasing Opportunities Pipeline',
-        pipeline_desc: 'Drag deals across stages. Pipeline stage is strictly separated from operational unit status.',
-        contracts_title: 'Contracts & Dual Signature Verification',
-        contracts_desc: 'Commission becomes due ONLY after both required signatures (Landlord & Tenant) are legally verified.',
-        commissions_title: 'Segregated Leasing Commission Ledger',
-        commissions_desc: 'Strictly separated from monthly rent collection. Supports 3 calculation methods, invoicing and payment tracking.',
-        admin_title: 'Centralized Dynamic Configuration (Zero Code Modification)',
-        admin_desc: 'Configure Area Types, Unit Types, Tax Rules, and Pipelines directly through the admin engine.'
-    },
-    ar: {
-        app_sub: 'نظام إدارة العقارات والتأجير التجاري',
-        nav_portfolio: 'المحفظة والمشاريع',
-        nav_units: 'سجل الوحدات والمساحات الديناميكية',
-        nav_pipeline: 'خط صفقات التأجير (كانبان)',
-        nav_contracts: 'العقود والتوقيع الثنائي القانوني',
-        nav_commissions: 'سجل عمولات التأجير المستقل',
-        nav_admin: 'الإعدادات والتهيئات الديناميكية',
-        btn_new_deal: 'صفقة تأجير جديدة',
-        kpi_occupancy: 'نسبة إشغال المحفظة',
-        kpi_active_deals: 'الصفقات النشطة بالخط',
-        kpi_comm_due: 'عمولة التأجير المستحقة',
-        kpi_comm_collected: 'العمولات المحصلة',
-        kpi_dual_sig_note: 'تُستحق فقط بعد اكتمال التوقيعين والتحقق',
-        projects_title: 'المشاريع التجارية',
-        units_title: 'سجل الوحدات ومكونات المساحة المتعددة',
-        units_desc: 'تدعم كل وحدة عدة أنواع مساحات مستقلة (داخلي، خارجي، تراس، مخزن) مع دعم التأجير الجزئي المتزامن.',
-        pipeline_title: 'خط مراحل صفقات التأجير',
-        pipeline_desc: 'مرحلة الصفقة في الـ Pipeline منفصلة تماماً عن الحالة التشغيلية للوحدة.',
-        contracts_title: 'العقود والتحقق من التوقيع الثنائي',
-        contracts_desc: 'تصبح العمولة مستحقة الدفع فقط بعد التحقق القانوني من توقيعي الطرفين (المؤجر والمستأجر).',
-        commissions_title: 'دفتر عمولات التأجير المفصول مالياً',
-        commissions_desc: 'فصل مالي تام عن فواتير الإيجار والخدمات الشهرية، مع دعم طرق الحساب الثلاثة وتتبع السداد.',
-        admin_title: 'محرك الإعدادات والتهيئات الديناميكية (بدون تعديل كود)',
-        admin_desc: 'إمكانية إضافة أنواع المساحات، أنواع الوحدات، خطوط الصفقات والمراحل مباشرة من لوحة التحكم.'
-    }
-};
-
-let currentLang = 'en';
+// Savills Enterprise Property & Leasing Client Controller
 let state = {
     projects: [],
     units: [],
@@ -65,7 +9,6 @@ let state = {
     commissions: []
 };
 
-// Initialize
 document.addEventListener('DOMContentLoaded', async () => {
     setupEventListeners();
     await loadInitialData();
@@ -81,17 +24,6 @@ function setupEventListeners() {
         });
     });
 
-    // Language Toggle
-    const langBtn = document.getElementById('langToggleBtn');
-    langBtn.addEventListener('click', () => {
-        currentLang = currentLang === 'en' ? 'ar' : 'en';
-        document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
-        document.documentElement.lang = currentLang;
-        document.getElementById('langLabel').textContent = currentLang === 'ar' ? 'English (LTR)' : 'العربية (RTL)';
-        updateTranslations();
-        renderAll();
-    });
-
     // Modals
     document.getElementById('openNewDealBtn').addEventListener('click', openDealModal);
     document.getElementById('closeDealModalBtn').addEventListener('click', closeDealModal);
@@ -104,21 +36,9 @@ function setupEventListeners() {
         document.getElementById('areaTypeModalOverlay').classList.remove('active');
     });
 
-    // New Deal Form Submission
     document.getElementById('newDealForm').addEventListener('submit', handleCreateDeal);
     document.getElementById('newAreaTypeForm').addEventListener('submit', handleCreateAreaType);
-
-    // Unit select change in modal
     document.getElementById('dealUnitSelect').addEventListener('change', populateUnitAllocationsInModal);
-}
-
-function updateTranslations() {
-    document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        if (I18N[currentLang][key]) {
-            el.textContent = I18N[currentLang][key];
-        }
-    });
 }
 
 function switchTab(tabName) {
@@ -130,8 +50,15 @@ function switchTab(tabName) {
     if (activeLink) activeLink.classList.add('active');
     if (activePane) activePane.classList.add('active');
 
-    const headingKey = `nav_${tabName}`;
-    document.getElementById('pageHeading').textContent = I18N[currentLang][headingKey] || tabName;
+    const titles = {
+        portfolio: 'Portfolio & Assets',
+        units: 'Units & Dynamic Areas',
+        pipeline: 'Leasing Pipeline (Kanban)',
+        contracts: 'Contracts & Dual Signatures',
+        commissions: 'Commission Ledger',
+        admin: 'Admin Configurations'
+    };
+    document.getElementById('pageHeading').textContent = titles[tabName] || tabName;
 }
 
 // Data Fetching
@@ -166,10 +93,10 @@ async function loadInitialData() {
 function renderKPIs(stats) {
     if (!stats || !stats.portfolio) return;
     document.getElementById('kpiOccupancy').textContent = `${stats.portfolio.occupancy_rate}%`;
-    document.getElementById('kpiAreaSummary').textContent = `${stats.portfolio.leased_area_sqm} / ${stats.portfolio.total_area_sqm} SQM`;
+    document.getElementById('kpiAreaSummary').textContent = `${Number(stats.portfolio.leased_area_sqm).toLocaleString()} / ${Number(stats.portfolio.total_area_sqm).toLocaleString()} SQM leased`;
 
     document.getElementById('kpiActiveDeals').textContent = stats.leasing.active_deals;
-    document.getElementById('kpiContractedRent').textContent = `EGP ${Number(stats.leasing.total_contracted_annual_rent).toLocaleString()}/yr`;
+    document.getElementById('kpiContractedRent').textContent = `EGP ${Number(stats.leasing.total_contracted_annual_rent).toLocaleString()}/yr contracted`;
 
     document.getElementById('kpiCommDue').textContent = `EGP ${Number(stats.commissions.earned_due).toLocaleString()}`;
     document.getElementById('kpiCommCollected').textContent = `EGP ${Number(stats.commissions.collected).toLocaleString()}`;
@@ -192,11 +119,11 @@ function renderProjects() {
             <span class="project-code">${p.code}</span>
             <div class="project-name">${p.name}</div>
             <div class="project-location">📍 ${p.location}</div>
-            <p style="font-size:0.8rem; color:#64748b; margin-bottom:12px;">${p.description || ''}</p>
+            <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:14px; line-height:1.4;">${p.description || ''}</p>
             <div class="project-stats-grid">
                 <div class="p-stat-box">
-                    <div class="lbl">Total Units</div>
-                    <div class="val">${p.total_units} units</div>
+                    <div class="lbl">Commercial Units</div>
+                    <div class="val">${p.total_units} Units</div>
                 </div>
                 <div class="p-stat-box">
                     <div class="lbl">Gross Leasable Area</div>
@@ -212,8 +139,7 @@ function renderUnits() {
     tbody.innerHTML = state.units.map(u => {
         const areaChips = (u.areas || []).map(a => {
             const cls = a.area_type_code ? `chip-${a.area_type_code.toLowerCase()}` : 'chip-indoor';
-            const name = currentLang === 'ar' ? a.name_ar : a.name_en;
-            return `<span class="area-chip ${cls}">${name}: ${a.size_sqm}m² (Avail: ${a.available_sqm}m²)</span>`;
+            return `<span class="area-chip ${cls}">${a.name_en}: ${a.size_sqm}m² (Avail: ${a.available_sqm}m²)</span>`;
         }).join('');
 
         let statusClass = 'status-available';
@@ -222,13 +148,13 @@ function renderUnits() {
 
         return `
             <tr>
-                <td style="font-weight:700;">${u.unit_number}</td>
-                <td>${u.project_name}</td>
-                <td>${currentLang === 'ar' ? u.unit_type_ar : u.unit_type_en}</td>
+                <td style="font-weight:800; color:var(--savills-navy);">${u.unit_number}</td>
+                <td><strong>${u.project_name}</strong></td>
+                <td>${u.unit_type_en}</td>
                 <td><div class="area-breakdown-cell">${areaChips}</div></td>
                 <td style="font-weight:700;">${u.total_physical_sqm} SQM</td>
-                <td style="color:#2563eb; font-weight:700;">${u.total_allocated_sqm} SQM</td>
-                <td style="color:#10b981; font-weight:700;">${u.total_available_sqm} SQM</td>
+                <td style="color:var(--savills-navy); font-weight:700;">${u.total_allocated_sqm} SQM</td>
+                <td style="color:var(--status-success-text); font-weight:700;">${u.total_available_sqm} SQM</td>
                 <td><span class="status-pill ${statusClass}">${u.operational_status}</span></td>
             </tr>
         `;
@@ -241,7 +167,6 @@ function renderKanban() {
     if (!pipeline || !pipeline.stages) return;
 
     board.innerHTML = pipeline.stages.map(stg => {
-        const stageName = currentLang === 'ar' ? stg.name_ar : stg.name_en;
         const stageDeals = state.deals.filter(d => d.current_stage_id === stg.id);
 
         const dealCards = stageDeals.map(d => `
@@ -251,7 +176,7 @@ function renderKanban() {
                 <div class="deal-unit">Unit: ${d.unit_number} (${d.project_name})</div>
                 <div class="deal-financials">
                     <span>${d.total_allocated_sqm || 0} SQM</span>
-                    <span style="color:#2563eb;">EGP ${Number(d.annual_rent || 0).toLocaleString()}/yr</span>
+                    <span style="color:var(--savills-navy);">EGP ${Number(d.annual_rent || 0).toLocaleString()}/yr</span>
                 </div>
             </div>
         `).join('');
@@ -259,7 +184,7 @@ function renderKanban() {
         return `
             <div class="kanban-column" ondragover="handleDragOver(event)" ondrop="handleDrop(event, '${stg.id}')">
                 <div class="kanban-col-header">
-                    <span class="col-title" style="border-left: 3px solid ${stg.color_hex}; padding-left: 8px;">${stageName}</span>
+                    <span class="col-title" style="border-left: 3px solid ${stg.color_hex}; padding-left: 8px;">${stg.name_en}</span>
                     <span class="badge-count">${stageDeals.length}</span>
                 </div>
                 <div class="deals-container">
@@ -276,8 +201,8 @@ function renderContracts() {
         <div class="contract-card">
             <div class="contract-header">
                 <div>
-                    <h3 style="font-size:1.05rem; font-weight:800;">Contract: ${d.contract_number}</h3>
-                    <p style="font-size:0.8rem; color:#64748b;">Deal: ${d.deal_reference} | Tenant: ${d.brand_name || d.tenant_name} | Unit: ${d.unit_number}</p>
+                    <h3 style="font-size:1.1rem; font-weight:800; color:var(--savills-navy);">Contract: ${d.contract_number}</h3>
+                    <p style="font-size:0.82rem; color:var(--text-muted);">Deal: ${d.deal_reference} | Tenant: ${d.brand_name || d.tenant_name} | Unit: ${d.unit_number} (${d.project_name})</p>
                 </div>
                 <span class="status-pill ${d.contract_status === 'Fully Signed' ? 'status-paid' : 'status-partially-leased'}">${d.contract_status}</span>
             </div>
@@ -285,14 +210,14 @@ function renderContracts() {
             <!-- Dual Signature Status Box -->
             <div class="dual-signature-grid">
                 <div class="sig-slot">
-                    <div class="sig-slot-title">🏢 Landlord / Owner Signature</div>
-                    <div style="font-size:0.82rem; margin-bottom:8px;">Signer: <strong>Authorized Asset Manager</strong></div>
-                    <button class="secondary-btn" onclick="verifySig('${d.contract_id}', 'LANDLORD')">✓ Verify Landlord Signature</button>
+                    <div class="sig-slot-title">🏢 Landlord / Asset Owner Signatory</div>
+                    <div style="font-size:0.84rem; margin-bottom:10px;">Signer: <strong>Authorized Asset Manager</strong></div>
+                    <button class="savills-btn-secondary" onclick="verifySig('${d.contract_id}', 'LANDLORD')">✓ Verify Landlord Signature</button>
                 </div>
                 <div class="sig-slot">
                     <div class="sig-slot-title">🏬 Tenant Authorized Signatory</div>
-                    <div style="font-size:0.82rem; margin-bottom:8px;">Signer: <strong>${d.tenant_name}</strong></div>
-                    <button class="secondary-btn" onclick="verifySig('${d.contract_id}', 'TENANT')">✓ Verify Tenant Signature</button>
+                    <div style="font-size:0.84rem; margin-bottom:10px;">Signer: <strong>${d.tenant_name}</strong></div>
+                    <button class="savills-btn-secondary" onclick="verifySig('${d.contract_id}', 'TENANT')">✓ Verify Tenant Signature</button>
                 </div>
             </div>
         </div>
@@ -303,20 +228,20 @@ function renderCommissions() {
     const tbody = document.getElementById('commissionsTableBody');
     tbody.innerHTML = state.commissions.map(c => `
         <tr>
-            <td style="font-weight:700; color:#2563eb;">${c.deal_reference}</td>
+            <td style="font-weight:800; color:var(--savills-navy);">${c.deal_reference}</td>
             <td>${c.contract_number}</td>
             <td><strong>${c.tenant_name}</strong></td>
             <td>EGP ${Number(c.base_annual_rent).toLocaleString()}</td>
             <td>EGP ${Number(c.gross_commission).toLocaleString()}</td>
-            <td style="font-weight:700; color:#1d4ed8;">EGP ${Number(c.net_commission).toLocaleString()}</td>
+            <td style="font-weight:800; color:var(--savills-navy);">EGP ${Number(c.net_commission).toLocaleString()}</td>
             <td><span class="status-pill ${c.commission_status === 'Commission Due' ? 'status-due' : 'status-paid'}">${c.commission_status}</span></td>
-            <td>${c.invoice_number ? `${c.invoice_number} (Paid: EGP ${Number(c.paid_amount).toLocaleString()})` : 'Not Invoiced'}</td>
+            <td>${c.invoice_number ? `${c.invoice_number} (Paid: EGP ${Number(c.paid_amount).toLocaleString()})` : 'Pending Invoice'}</td>
             <td>
                 ${c.commission_status === 'Commission Due' ? 
-                    `<button class="primary-btn" style="padding:4px 8px; font-size:0.75rem;" onclick="issueCommInvoice('${c.id}')">Issue Invoice</button>` : 
+                    `<button class="savills-btn-primary" style="padding:4px 10px; font-size:0.75rem;" onclick="issueCommInvoice('${c.id}')">Issue Invoice</button>` : 
                   c.invoice_id && c.invoice_status !== 'Paid' ? 
-                    `<button class="secondary-btn" style="padding:4px 8px; font-size:0.75rem;" onclick="payCommInvoice('${c.invoice_id}', ${c.remaining_balance})">Record Pay</button>` : 
-                    `<span style="color:#10b981; font-weight:700;">Completed</span>`
+                    `<button class="savills-btn-secondary" style="padding:4px 10px; font-size:0.75rem;" onclick="payCommInvoice('${c.invoice_id}', ${c.remaining_balance})">Record Payment</button>` : 
+                    `<span style="color:var(--status-success-text); font-weight:800;">Completed</span>`
                 }
             </td>
         </tr>
@@ -328,10 +253,10 @@ function renderAdminSettings() {
     atList.innerHTML = state.areaTypes.map(at => `
         <li class="config-item">
             <div>
-                <strong>${currentLang === 'ar' ? at.name_ar : at.name_en}</strong>
-                <span style="font-size:0.75rem; color:#64748b; margin-left:8px;">Code: ${at.code}</span>
+                <strong style="color:var(--savills-navy);">${at.name_en}</strong>
+                <span style="font-size:0.75rem; color:var(--text-muted); margin-left:8px;">Code: ${at.code}</span>
             </div>
-            <span class="badge-count">${at.is_rentable ? 'Rentable' : 'Non-Rentable'}</span>
+            <span class="badge-count">${at.is_rentable ? 'Rentable Area' : 'Non-Rentable'}</span>
         </li>
     `).join('');
 }
@@ -443,13 +368,13 @@ async function handleCreateDeal(e) {
         });
         if (!res.ok) {
             const err = await res.json();
-            alert(`Error creating deal: ${err.error}`);
+            alert(`Error creating opportunity: ${err.error}`);
             return;
         }
         closeDealModal();
         await loadInitialData();
     } catch (err) {
-        alert('Failed to execute deal');
+        alert('Failed to execute leasing opportunity');
     }
 }
 
@@ -460,7 +385,7 @@ async function handleCreateAreaType(e) {
         company_id: state.projects[0].company_id,
         code: document.getElementById('newAreaCode').value.toUpperCase(),
         name_en: document.getElementById('newAreaNameEn').value,
-        name_ar: document.getElementById('newAreaNameAr').value,
+        name_ar: document.getElementById('newAreaNameEn').value,
         is_rentable: 1
     };
 
@@ -502,7 +427,7 @@ window.verifySig = async function(contractId, partyType) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             party_type: partyType,
-            verified_by: 'Authorized Legal Officer',
+            verified_by: 'Savills Legal & Compliance Division',
             notes: 'Verified via commercial registry'
         })
     });
@@ -520,7 +445,7 @@ window.payCommInvoice = async function(invoiceId, balance) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             amount: balance,
-            payment_reference: 'WIRE-' + Math.floor(100000 + Math.random() * 900000),
+            payment_reference: 'SAVILLS-WIRE-' + Math.floor(100000 + Math.random() * 900000),
             payment_method: 'Bank Transfer'
         })
     });
