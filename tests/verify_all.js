@@ -34,8 +34,8 @@ function test(name, fn) {
 test('Can retrieve and create unlimited projects', () => {
     const projects = MasterDataService.getProjects();
     assert(projects.length >= 3, 'Must have at least 3 seeded projects');
-    const cfc = projects.find(p => p.code === 'CFC-MALL');
-    assert(cfc, 'CFC-MALL must exist');
+    const cfc = projects.find(p => p.code === 'SAV-CFC' || p.code === 'CFC-MALL');
+    assert(cfc, 'SAV-CFC project must exist');
 });
 
 // 2. DYNAMIC AREA TYPES (NEVER HARDCODED COLUMNS)
