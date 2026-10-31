@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Property & Leasing Management System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand-section">
+                <div class="brand-logo">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 21h18M3 7v14M21 7v14M6 11h4M6 15h4M14 11h4M14 15h4M9 3l3-2 3 2v4H9V3z"/>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <span class="brand-name">HORIZON LEASING</span>
+                    <span class="brand-sub" data-i18n="app_sub">Enterprise Property & Leasing</span>
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <a href="#portfolio" class="nav-item active" data-tab="portfolio">
+                    <span class="nav-icon">🏢</span>
+                    <span data-i18n="nav_portfolio">Portfolio & Projects</span>
+                </a>
+                <a href="#units" class="nav-item" data-tab="units">
+                    <span class="nav-icon">🏬</span>
+                    <span data-i18n="nav_units">Units & Dynamic Areas</span>
+                </a>
+                <a href="#pipeline" class="nav-item" data-tab="pipeline">
+                    <span class="nav-icon">📋</span>
+                    <span data-i18n="nav_pipeline">Leasing Pipeline (Kanban)</span>
+                </a>
+                <a href="#contracts" class="nav-item" data-tab="contracts">
+                    <span class="nav-icon">✍️</span>
+                    <span data-i18n="nav_contracts">Contracts & Dual Signatures</span>
+                </a>
+                <a href="#commissions" class="nav-item" data-tab="commissions">
+                    <span class="nav-icon">💰</span>
+                    <span data-i18n="nav_commissions">Commission Ledger</span>
+                </a>
+                <a href="#admin" class="nav-item" data-tab="admin">
+                    <span class="nav-icon">⚙️</span>
+                    <span data-i18n="nav_admin">Dynamic Admin Settings</span>
+                </a>
+            </nav>
+
+            <div class="user-profile-badge">
+                <div class="user-avatar">MK</div>
+                <div class="user-info">
+                    <div class="user-name">Mostafa Kamel</div>
+                    <div class="user-role" data-i18n="role_title">Commercial Leasing Director</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="main-content">
+            <!-- Header Top Bar -->
+            <header class="top-bar">
+                <div class="page-title-area">
+                    <h1 id="pageHeading" data-i18n="nav_portfolio">Portfolio & Projects</h1>
+                    <span class="currency-tag">EGP (Egyptian Pound)</span>
+                </div>
+
+                <div class="top-controls">
+                    <!-- Language Toggle -->
+                    <button id="langToggleBtn" class="control-btn lang-btn">
+                        <span id="langLabel">العربية (RTL)</span>
+                    </button>
+                    <!-- New Deal Action Button -->
+                    <button id="openNewDealBtn" class="primary-btn">
+                        <span>+</span> <span data-i18n="btn_new_deal">New Leasing Deal</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- KPI Metric Strip -->
+            <section class="kpi-strip" id="kpiStrip">
+                <div class="kpi-card">
+                    <div class="kpi-label" data-i18n="kpi_occupancy">Portfolio Occupancy</div>
+                    <div class="kpi-val" id="kpiOccupancy">--%</div>
+                    <div class="kpi-sub" id="kpiAreaSummary">-- SQM leased</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label" data-i18n="kpi_active_deals">Active Deals in Pipeline</div>
+                    <div class="kpi-val" id="kpiActiveDeals">--</div>
+                    <div class="kpi-sub" id="kpiContractedRent">EGP --/yr contracted</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label" data-i18n="kpi_comm_due">Leasing Commission Due</div>
+                    <div class="kpi-val text-primary" id="kpiCommDue">EGP --</div>
+                    <div class="kpi-sub" data-i18n="kpi_dual_sig_note">Triggered upon dual signature</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label" data-i18n="kpi_comm_collected">Commission Collected</div>
+                    <div class="kpi-val text-success" id="kpiCommCollected">EGP --</div>
+                    <div class="kpi-sub" id="kpiCommOutstanding">Outstanding: EGP --</div>
+                </div>
+            </section>
+
+            <!-- TAB 1: PORTFOLIO & PROJECTS -->
+            <section id="tab-portfolio" class="tab-pane active">
+                <div class="pane-header">
+                    <h2 data-i18n="projects_title">Commercial Projects</h2>
+                    <span class="badge-count" id="projectCount">3 Projects</span>
+                </div>
+                <div class="projects-grid" id="projectsGrid"></div>
+            </section>
+
+            <!-- TAB 2: UNITS & DYNAMIC AREA ALLOCATIONS -->
+            <section id="tab-units" class="tab-pane">
+                <div class="pane-header">
+                    <div>
+                        <h2 data-i18n="units_title">Unit Register & Dynamic Multi-Component Areas</h2>
+                        <p class="pane-desc" data-i18n="units_desc">Units support multiple independent area types (Indoor, Outdoor, Terrace, Storage) and simultaneous partial leasing.</p>
+                    </div>
+                </div>
+                <div class="units-table-card">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th data-i18n="col_unit">Unit #</th>
+                                <th data-i18n="col_project">Project</th>
+                                <th data-i18n="col_type">Type</th>
+                                <th data-i18n="col_dynamic_areas">Dynamic Area Breakdown</th>
+                                <th data-i18n="col_total_sqm">Total Physical</th>
+                                <th data-i18n="col_allocated_sqm">Allocated</th>
+                                <th data-i18n="col_available_sqm">Available</th>
+                                <th data-i18n="col_status">Operational Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="unitsTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- TAB 3: LEASING PIPELINE (KANBAN) -->
+            <section id="tab-pipeline" class="tab-pane">
+                <div class="pane-header">
+                    <div>
+                        <h2 data-i18n="pipeline_title">Leasing Opportunities Pipeline</h2>
+                        <p class="pane-desc" data-i18n="pipeline_desc">Drag deals across stages. Pipeline stage is strictly separated from operational unit status.</p>
+                    </div>
+                </div>
+                <div class="kanban-board" id="kanbanBoard"></div>
+            </section>
+
+            <!-- TAB 4: CONTRACTS & DUAL SIGNATURES -->
+            <section id="tab-contracts" class="tab-pane">
+                <div class="pane-header">
+                    <div>
+                        <h2 data-i18n="contracts_title">Contracts & Dual Signature Verification</h2>
+                        <p class="pane-desc" data-i18n="contracts_desc">Commission becomes due ONLY after both required signatures (Landlord & Tenant) are legally verified.</p>
+                    </div>
+                </div>
+                <div class="contracts-list" id="contractsList"></div>
+            </section>
+
+            <!-- TAB 5: COMMISSION LEDGER (STRICT FINANCIAL SEPARATION) -->
+            <section id="tab-commissions" class="tab-pane">
+                <div class="pane-header">
+                    <div>
+                        <h2 data-i18n="commissions_title">Segregated Leasing Commission Ledger</h2>
+                        <p class="pane-desc" data-i18n="commissions_desc">Strictly separated from monthly rent collection. Supports 3 calculation methods, invoicing and payment tracking.</p>
+                    </div>
+                </div>
+                <div class="commissions-table-card">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th data-i18n="col_deal_ref">Deal Reference</th>
+                                <th data-i18n="col_contract">Contract #</th>
+                                <th data-i18n="col_tenant">Tenant</th>
+                                <th data-i18n="col_base_rent">Annual Rent Base</th>
+                                <th data-i18n="col_gross_comm">Gross Commission</th>
+                                <th data-i18n="col_net_comm">Net (Incl. Tax)</th>
+                                <th data-i18n="col_comm_status">Commission Status</th>
+                                <th data-i18n="col_invoice_ref">Invoice / Paid</th>
+                                <th data-i18n="col_action">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="commissionsTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- TAB 6: DYNAMIC ADMIN SETTINGS -->
+            <section id="tab-admin" class="tab-pane">
+                <div class="pane-header">
+                    <div>
+                        <h2 data-i18n="admin_title">Centralized Dynamic Configuration (Zero Code Modification)</h2>
+                        <p class="pane-desc" data-i18n="admin_desc">Configure Area Types, Unit Types, Tax Rules, and Pipelines directly through the admin engine.</p>
+                    </div>
+                </div>
+                <div class="admin-grid">
+                    <!-- Area Types Config Card -->
+                    <div class="admin-card">
+                        <div class="admin-card-header">
+                            <h3 data-i18n="admin_area_types">Dynamic Area Types Configuration</h3>
+                            <button id="addAreaTypeBtn" class="secondary-btn">+ Add Area Type</button>
+                        </div>
+                        <ul class="config-list" id="areaTypesConfigList"></ul>
+                    </div>
+
+                    <!-- Pipeline & Stages Config Card -->
+                    <div class="admin-card">
+                        <div class="admin-card-header">
+                            <h3 data-i18n="admin_pipelines">Deal Pipelines & Custom Stages</h3>
+                        </div>
+                        <div id="pipelinesConfigContainer"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- MODAL: NEW DEAL & FINANCIAL CALCULATION BUILDER -->
+    <div class="modal-overlay" id="dealModalOverlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 data-i18n="modal_new_deal_title">Create Commercial Leasing Deal</h3>
+                <button class="close-modal-btn" id="closeDealModalBtn">&times;</button>
+            </div>
+            <form id="newDealForm" class="modal-form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label data-i18n="lbl_project">Project</label>
+                        <select id="dealProjectSelect" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="lbl_unit">Target Unit</label>
+                        <select id="dealUnitSelect" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="lbl_tenant">Tenant</label>
+                        <select id="dealTenantSelect" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="lbl_brand">Brand</label>
+                        <select id="dealBrandSelect"></select>
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="lbl_start_date">Contract Start Date</label>
+                        <input type="date" id="dealStartDate" value="2026-03-01" required>
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="lbl_end_date">Contract End Date</label>
+                        <input type="date" id="dealEndDate" value="2029-02-28" required>
+                    </div>
+                </div>
+
+                <!-- Dynamic Area Allocations & Independent Pricing Table -->
+                <div class="sub-form-section">
+                    <h4 data-i18n="sec_area_allocation">Partial Area Allocation & Independent Area Pricing (EGP/SQM)</h4>
+                    <p class="section-hint" data-i18n="hint_allocation">Specify allocated SQM and custom rates for each area component of this unit.</p>
+                    <table class="pricing-calc-table">
+                        <thead>
+                            <tr>
+                                <th>Area Type</th>
+                                <th>Available SQM</th>
+                                <th>Allocated SQM</th>
+                                <th>Rent Rate (EGP/SQM)</th>
+                                <th>Service Rate (EGP/SQM)</th>
+                                <th>Monthly Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dealAllocationRows"></tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="5" style="text-align:right; font-weight:700;">Calculated Monthly Total:</td>
+                                <td id="calcMonthlyTotal" style="font-weight:800; color:#2563eb;">EGP 0</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <!-- Security Deposit & Commission Configurations -->
+                <div class="form-grid" style="margin-top:16px;">
+                    <div class="form-group">
+                        <label data-i18n="lbl_deposit_method">Deposit Method</label>
+                        <select id="dealDepositMethod">
+                            <option value="RENT_AND_SERVICE">Rent + Service Charge Months</option>
+                            <option value="RENT_ONLY">Rent Only Months</option>
+                            <option value="FIXED_AMOUNT">Fixed Amount</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="lbl_deposit_months">Deposit Months</label>
+                        <input type="number" id="dealDepositMonths" value="3" min="1" max="12">
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="lbl_comm_method">Commission Calculation Method</label>
+                        <select id="dealCommMethod">
+                            <option value="PERCENT_ANNUAL_RENT">Percentage of Annual Rent (e.g. 10%)</option>
+                            <option value="RENT_MONTHS">Number of Rent Months (e.g. 2 Months)</option>
+                            <option value="FIXED_AMOUNT">Fixed Commission Amount</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="lbl_comm_val">Commission Rate / Months / Amount</label>
+                        <input type="number" id="dealCommRate" value="10" min="1">
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="secondary-btn" id="cancelDealModalBtn" data-i18n="btn_cancel">Cancel</button>
+                    <button type="submit" class="primary-btn" data-i18n="btn_save_deal">Execute Deal & Freeze Snapshot</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD DYNAMIC AREA TYPE -->
+    <div class="modal-overlay" id="areaTypeModalOverlay">
+        <div class="modal-box modal-box-sm">
+            <div class="modal-header">
+                <h3 data-i18n="modal_new_area_type">Add Dynamic Area Type</h3>
+                <button class="close-modal-btn" id="closeAreaTypeModalBtn">&times;</button>
+            </div>
+            <form id="newAreaTypeForm" class="modal-form">
+                <div class="form-group">
+                    <label>Area Type Code</label>
+                    <input type="text" id="newAreaCode" placeholder="e.g. MEZZANINE" required>
+                </div>
+                <div class="form-group">
+                    <label>English Name</label>
+                    <input type="text" id="newAreaNameEn" placeholder="e.g. Mezzanine Floor" required>
+                </div>
+                <div class="form-group">
+                    <label>Arabic Name</label>
+                    <input type="text" id="newAreaNameAr" placeholder="e.g. ميزانين تجاري" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="primary-btn">Save Area Type</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
